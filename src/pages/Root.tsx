@@ -4,7 +4,7 @@ import generatePDF from "react-to-pdf"
 
 export const Root: React.FunctionComponent = ({props}) => {
     const [count, setCount] = useState(0)
-    const targetRef = useRef()
+    const targetRef = useRef<HTMLDivElement>(null)
 
     return (
       <>
