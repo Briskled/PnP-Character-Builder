@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button"
 import { useRef, useState } from "react"
 import generatePDF from "react-to-pdf"
 
-export const Root: React.FunctionComponent = ({props}) => {
+export const Root: React.FunctionComponent = () => {
     const [count, setCount] = useState(0)
     const targetRef = useRef<HTMLDivElement>(null)
 
