@@ -81,7 +81,6 @@ export const CharacterSheetPdf: FunctionComponent<CharacterSheetPdfProps> = ({ s
     return <Document
         title={`Character-Sheet: ${stats.name}`}
         author="Automatically Generated"
-        creator={stats.realName}
     >
         <Page style={{ ...styles.page, ...styles.flexColumn }}>
             <View id="title" style={styles.title}>

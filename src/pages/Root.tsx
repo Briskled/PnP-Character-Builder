@@ -1,26 +1,22 @@
-import { NumberInput } from "@/components/feature/NumberInput"
 import { StatusValue } from "@/components/feature/StatusValue"
-import { WritableArea } from "@/components/feature/WritableArea"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { DownloadIcon, ResetIcon } from "@radix-ui/react-icons"
-import { useEffect, useMemo, useState } from "react"
-import { PDFViewer, pdf } from '@react-pdf/renderer';
+import { useMemo } from "react"
+import { pdf } from '@react-pdf/renderer';
 import { Stats } from "@/lib/types/StatsType"
 import { CharacterSheetPdf } from "./CharacterSheetPdf"
 import { z } from 'zod'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { LoadingSpinner } from "@/components/util/LoadingSpinner"
 import { saveAs } from 'file-saver'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { FastFormField } from "@/components/util/FastFormField"
 import { Card } from "@/components/ui/card"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
-import { Popover } from "@/components/ui/popover"
-import { PopoverContent } from "@radix-ui/react-popover"
-import { Label } from "@radix-ui/react-label"
+import { getFullCost } from "@/lib/cost"
+import { cn } from "@/lib/utils"
+import { Label } from "@/components/ui/label"
 
 const defaultState: Stats = {
     strength: -2,
@@ -48,10 +44,8 @@ const formSchema = z.object({
     job: z.string().min(3, { message: "Job muss mindestens 3 Zeichen lang sein" }).max(30, { message: "Job darf höchstens 30 Zeichen lang sein." }),
     story: z.string().min(1, { message: "Gib bitte wenigstens etwas kurzes an." }),
     phobia: z.string().min(1, { message: "Gib mindestens eine Phobie an." }),
-    remainingTokens: z.coerce.number().max(0).min(0),
 })
 
-const costMap = [0, 1, 2, 3, 4, 6, 8, 11,]
 
 
 type CharacterForm = z.infer<typeof formSchema>
@@ -79,10 +73,9 @@ export const Root: React.FunctionComponent = () => {
     const tokens = useMemo(() => {
         const values = form.getValues()
         const currents = [values.strength, values.agility, values.spirit, values.wisdom]
-        const cost = currents.map((c) => costMap[c + 2])
+        const cost = currents.map((c) => getFullCost(c))
         const sum = cost.reduce((a, b) => a + b, 0)
         const remaining = MAX_TOKENS - sum
-        form.setValue("remainingTokens", remaining)
         return remaining
     }, [form, form.getValues()])
 
@@ -92,7 +85,7 @@ export const Root: React.FunctionComponent = () => {
                 <form onSubmit={form.handleSubmit(onSubmit)}>
                     <Card className="container flex flex-col p-4 min-w-[70rem]">
                         <div className="flex flex-col">
-                            <div>Charakterbogen</div>
+                            <Label className="text-2xl mb-6">Charakterbogen</Label>
                             <div id="header" className="flex flex-row gap-4 border-b-[1px] border-grey pb-2">
                                 <FormField
                                     control={form.control}
@@ -152,17 +145,7 @@ export const Root: React.FunctionComponent = () => {
                             </div>
                             <div className="flex flex-row gap-4">
                                 <div className="flex flex-col gap-4 pt-4 border-r-[1px] border-grey pr-2">
-                                    <FormField
-                                        control={form.control}
-                                        name="remainingTokens"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel className="mr-2">Zu verteilen:</FormLabel>
-                                                <Label>{field.value}</Label>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
+                                    <Label className={cn("p-3 rounded-lg", tokens > 0 && "bg-red-500/10 font-bold")}>Zu verteilen: {tokens}</Label>
                                     <FormField
                                         control={form.control}
                                         name="strength"
@@ -170,7 +153,7 @@ export const Root: React.FunctionComponent = () => {
                                             <FormItem>
                                                 <FormLabel>Stärke</FormLabel>
                                                 <FormControl>
-                                                    <StatusValue value={field.value} onValueChanged={(val) => field.onChange(val)} />
+                                                    <StatusValue remainingTokens={tokens} value={field.value} onValueChanged={(val) => field.onChange(val)} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -183,7 +166,7 @@ export const Root: React.FunctionComponent = () => {
                                             <FormItem>
                                                 <FormLabel>Geschicklichkeit</FormLabel>
                                                 <FormControl>
-                                                    <StatusValue value={field.value} onValueChanged={(val) => field.onChange(val)} />
+                                                    <StatusValue remainingTokens={tokens} value={field.value} onValueChanged={(val) => field.onChange(val)} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -196,7 +179,7 @@ export const Root: React.FunctionComponent = () => {
                                             <FormItem>
                                                 <FormLabel>Übernatürlicher Sinn</FormLabel>
                                                 <FormControl>
-                                                    <StatusValue value={field.value} onValueChanged={(val) => field.onChange(val)} />
+                                                    <StatusValue remainingTokens={tokens} value={field.value} onValueChanged={(val) => field.onChange(val)} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -209,7 +192,7 @@ export const Root: React.FunctionComponent = () => {
                                             <FormItem>
                                                 <FormLabel>Geisteskraft</FormLabel>
                                                 <FormControl>
-                                                    <StatusValue value={field.value} onValueChanged={(val) => field.onChange(val)} />
+                                                    <StatusValue remainingTokens={tokens} value={field.value} onValueChanged={(val) => field.onChange(val)} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -270,7 +253,7 @@ export const Root: React.FunctionComponent = () => {
                                 </AlertDialogContent>
                             </AlertDialog>
 
-                            <Button type="submit"><DownloadIcon /> Download</Button>
+                            <Button type="submit" disabled={!form.formState.isValid}><DownloadIcon/>Als PDF speichern</Button>
                         </div>
                     </Card>
                 </form>
