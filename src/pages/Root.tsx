@@ -2,7 +2,7 @@ import { StatusValue } from "@/components/feature/StatusValue"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { DownloadIcon, ResetIcon } from "@radix-ui/react-icons"
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { pdf } from '@react-pdf/renderer';
 import { Stats } from "@/lib/types/StatsType"
 import { CharacterSheetPdf } from "./CharacterSheetPdf"
@@ -51,6 +51,8 @@ const formSchema = z.object({
 type CharacterForm = z.infer<typeof formSchema>
 
 export const Root: React.FunctionComponent = () => {
+    const [stupidCounter, setStupidCounter] = useState(0)
+
     const form = useForm<CharacterForm>({
         resolver: zodResolver(formSchema),
         defaultValues: defaultState,
@@ -77,7 +79,7 @@ export const Root: React.FunctionComponent = () => {
         const sum = cost.reduce((a, b) => a + b, 0)
         const remaining = MAX_TOKENS - sum
         return remaining
-    }, [form, form.getValues()])
+    }, [stupidCounter])
 
     return (
         <>
@@ -153,7 +155,11 @@ export const Root: React.FunctionComponent = () => {
                                             <FormItem>
                                                 <FormLabel>Stärke</FormLabel>
                                                 <FormControl>
-                                                    <StatusValue remainingTokens={tokens} value={field.value} onValueChanged={(val) => field.onChange(val)} />
+                                                    <StatusValue remainingTokens={tokens} value={field.value} onValueChanged={(val) => {
+                                                        field.onChange(val)
+                                                        setStupidCounter(stupidCounter + 1)
+                                                    }
+                                                    } />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -166,7 +172,10 @@ export const Root: React.FunctionComponent = () => {
                                             <FormItem>
                                                 <FormLabel>Geschicklichkeit</FormLabel>
                                                 <FormControl>
-                                                    <StatusValue remainingTokens={tokens} value={field.value} onValueChanged={(val) => field.onChange(val)} />
+                                                    <StatusValue remainingTokens={tokens} value={field.value} onValueChanged={(val) => {
+                                                        field.onChange(val)
+                                                        setStupidCounter(stupidCounter + 1)
+                                                    }} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -179,7 +188,10 @@ export const Root: React.FunctionComponent = () => {
                                             <FormItem>
                                                 <FormLabel>Übernatürlicher Sinn</FormLabel>
                                                 <FormControl>
-                                                    <StatusValue remainingTokens={tokens} value={field.value} onValueChanged={(val) => field.onChange(val)} />
+                                                    <StatusValue remainingTokens={tokens} value={field.value} onValueChanged={(val) => {
+                                                        field.onChange(val)
+                                                        setStupidCounter(stupidCounter + 1)
+                                                    }} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -192,7 +204,10 @@ export const Root: React.FunctionComponent = () => {
                                             <FormItem>
                                                 <FormLabel>Geisteskraft</FormLabel>
                                                 <FormControl>
-                                                    <StatusValue remainingTokens={tokens} value={field.value} onValueChanged={(val) => field.onChange(val)} />
+                                                    <StatusValue remainingTokens={tokens} value={field.value} onValueChanged={(val) => {
+                                                        field.onChange(val)
+                                                        setStupidCounter(stupidCounter + 1)
+                                                    }} />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -253,7 +268,7 @@ export const Root: React.FunctionComponent = () => {
                                 </AlertDialogContent>
                             </AlertDialog>
 
-                            <Button type="submit" disabled={!form.formState.isValid}><DownloadIcon/>Als PDF speichern</Button>
+                            <Button type="submit" disabled={!form.formState.isValid || tokens !== 0}><DownloadIcon />Als PDF speichern</Button>
                         </div>
                     </Card>
                 </form>

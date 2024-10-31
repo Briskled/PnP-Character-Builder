@@ -27,8 +27,8 @@ export const StatusValue: React.FunctionComponent<StatusValueProps & HTMLAttribu
     return <div className={cn("flex flex-row items-center justify-stretch flex rounded-md border border-neutral-200 bg-transparent transition-all", className)}>
         <Label className="grow">{value}</Label>
         <div className="flex flex-col items-stretch justify-center">
-            <Button variant="naked" onClick={() => changeValue(value + 1)}><ChevronUpIcon /></Button>
-            <Button variant="naked" onClick={() => changeValue(value - 1)}><ChevronDownIcon /></Button>
+            <Button type="button" variant="naked" onClick={() => changeValue(value + 1)}><ChevronUpIcon /></Button>
+            <Button type="button" variant="naked" onClick={() => changeValue(value - 1)}><ChevronDownIcon /></Button>
         </div>
     </div>
 }
