@@ -1,7 +1,7 @@
 import { StatusValue } from "@/components/feature/StatusValue"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { DownloadIcon, ResetIcon } from "@radix-ui/react-icons"
+import { DownloadIcon, InfoCircledIcon, ResetIcon } from "@radix-ui/react-icons"
 import { useMemo, useState } from "react"
 import { pdf } from '@react-pdf/renderer';
 import { Stats } from "@/lib/types/StatsType"
@@ -17,6 +17,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { getFullCost } from "@/lib/cost"
 import { cn } from "@/lib/utils"
 import { Label } from "@/components/ui/label"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { FormElement } from "@/components/feature/FormElement"
 
 const defaultState: Stats = {
     strength: -2,
@@ -85,163 +87,177 @@ export const Root: React.FunctionComponent = () => {
         <>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)}>
-                    <Card className="container flex flex-col p-4 min-w-[70rem]">
+                    <div className="bg-white flex flex-col p-8 lg:container lg:rounded-xl shadow-lg lg:mt-16">
                         <div className="flex flex-col">
                             <Label className="text-2xl mb-6">Charakterbogen</Label>
-                            <div id="header" className="flex flex-row gap-4 border-b-[1px] border-grey pb-2">
-                                <FormField
-                                    control={form.control}
-                                    name="name"
-                                    render={({ field }) => (
-                                        <FormItem className="grow">
-                                            <FormLabel>Name</FormLabel>
-                                            <FormControl>
-                                                <Input className="grow" placeholder="Name" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+                            <div id="header" className="flex flex-col lg:flex-row gap-4 border-b-[1px] border-grey pb-2">
+                                <FormElement className="grow" title="Name" infoText="Der Name deines Charakters">
+                                    <FormField
+                                        control={form.control}
+                                        name="name"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormControl>
+                                                    <Input className="grow" placeholder="Name" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </FormElement>
 
-                                <FormField
-                                    control={form.control}
-                                    name="age"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Alter</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="Alter" {...field} className="max-w-14 text-right" />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+                                <FormElement title="Alter" infoText="Wie alt ist dein Charakter? In Jahren">
+                                    <FormField
+                                        control={form.control}
+                                        name="age"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormControl>
+                                                    <Input placeholder="Alter" {...field} className="lg:max-w-14 text-right" inputMode="numeric" />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </FormElement>
 
-                                <FormField
-                                    control={form.control}
-                                    name="size"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Größe</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="Größe" {...field} className="max-w-20 text-right" />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+                                <FormElement title="Größe" infoText="Wie groß ist dein Charakter? In cm.">
+                                    <FormField
+                                        control={form.control}
+                                        name="size"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormControl>
+                                                    <Input placeholder="Größe" {...field} className="lg:max-w-20 text-right" inputMode="numeric" />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </FormElement>
 
-                                <FormField
-                                    control={form.control}
-                                    name="job"
-                                    render={({ field }) => (
-                                        <FormItem className="grow">
-                                            <FormLabel>Beruf</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="Beruf" {...field} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+                                <FormElement className="grow" title="Beruf">
+                                    <FormField
+                                        control={form.control}
+                                        name="job"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormControl>
+                                                    <Input placeholder="Beruf" {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </FormElement>
                             </div>
-                            <div className="flex flex-row gap-4">
-                                <div className="flex flex-col gap-4 pt-4 border-r-[1px] border-grey pr-2">
-                                    <Label className={cn("p-3 rounded-lg", tokens > 0 && "bg-red-500/10 font-bold")}>Zu verteilen: {tokens}</Label>
-                                    <FormField
-                                        control={form.control}
-                                        name="strength"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Stärke</FormLabel>
-                                                <FormControl>
-                                                    <StatusValue remainingTokens={tokens} value={field.value} onValueChanged={(val) => {
-                                                        field.onChange(val)
-                                                        setStupidCounter(stupidCounter + 1)
-                                                    }
-                                                    } />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="agility"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Geschicklichkeit</FormLabel>
-                                                <FormControl>
-                                                    <StatusValue remainingTokens={tokens} value={field.value} onValueChanged={(val) => {
-                                                        field.onChange(val)
-                                                        setStupidCounter(stupidCounter + 1)
-                                                    }} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="spirit"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Übernatürlicher Sinn</FormLabel>
-                                                <FormControl>
-                                                    <StatusValue remainingTokens={tokens} value={field.value} onValueChanged={(val) => {
-                                                        field.onChange(val)
-                                                        setStupidCounter(stupidCounter + 1)
-                                                    }} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
-                                        name="wisdom"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Geisteskraft</FormLabel>
-                                                <FormControl>
-                                                    <StatusValue remainingTokens={tokens} value={field.value} onValueChanged={(val) => {
-                                                        field.onChange(val)
-                                                        setStupidCounter(stupidCounter + 1)
-                                                    }} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
+                            <div className="flex flex-col lg:flex-row gap-4">
+                                <div className="flex flex-col gap-4 pt-4 border-b-[1px] lg:border-b-[0px] lg:border-r-[1px] border-grey pr-2">
+                                    <Label className={cn("sticky top-3 p-3 rounded-lg lg:relative lg:top-0 bg-white", tokens > 0 && "bg-red-50 font-bold")}>Zu verteilen: {tokens}</Label>
+
+                                    <FormElement title="Stärke" infoText="Stärke bestimmt die körperliche Kraft deines Charakters. Sie ermöglicht es, schwere Gegenstände zu heben und in einer Kampfsituation ordentlich auszuteilen!">
+                                        <FormField
+                                            control={form.control}
+                                            name="strength"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormControl>
+                                                        <StatusValue remainingTokens={tokens} value={field.value} onValueChanged={(val) => {
+                                                            field.onChange(val)
+                                                            setStupidCounter(stupidCounter + 1)
+                                                        }
+                                                        } />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </FormElement>
+
+                                    <FormElement title="Geschicklichkeit" infoText="Deine Geschicklichkeit beeinflusst dein Können in allem, was mit Fingerfertigkeit zu tun hat. Sie bietet dir außerdem einen Bonus auf Heimlichkeit">
+                                        <FormField
+                                            control={form.control}
+                                            name="agility"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormControl>
+                                                        <StatusValue remainingTokens={tokens} value={field.value} onValueChanged={(val) => {
+                                                            field.onChange(val)
+                                                            setStupidCounter(stupidCounter + 1)
+                                                        }} />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </FormElement>
+
+                                    <FormElement title="Übernatürlicher Sinn" infoText="Deine Fähigkeit, übernatürliche Dinge wahrzunehmen, zu erahnen oder mit Wesen zu kommunizieren.">
+                                        <FormField
+                                            control={form.control}
+                                            name="spirit"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormControl>
+                                                        <StatusValue remainingTokens={tokens} value={field.value} onValueChanged={(val) => {
+                                                            field.onChange(val)
+                                                            setStupidCounter(stupidCounter + 1)
+                                                        }} />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </FormElement>
+
+                                    <FormElement title="Geisteskraft" infoText="Deine Intelligenz! Aber auch deine Willenskraft und die Fähigkeit, dich und deine Gedanken zu kontrollieren">
+                                        <FormField
+                                            control={form.control}
+                                            name="wisdom"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormControl>
+                                                        <StatusValue remainingTokens={tokens} value={field.value} onValueChanged={(val) => {
+                                                            field.onChange(val)
+                                                            setStupidCounter(stupidCounter + 1)
+                                                        }} />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </FormElement>
                                 </div>
                                 <div id="self" className="flex flex-col grow gap-4 pt-4">
-                                    <FormField
-                                        control={form.control}
-                                        name="phobia"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Phobie(n)</FormLabel>
-                                                <FormControl>
-                                                    <Textarea title="Phobie(n)" {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
+                                    <FormElement title="Phobie(n)" infoText="Wovor hat dein Charakter besonders viel Angst?">
+                                        <FormField
+                                            control={form.control}
+                                            name="phobia"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormControl>
+                                                        <Textarea title="Phobie(n)" {...field} />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </FormElement>
 
-                                    <FormField
-                                        control={form.control}
-                                        name="story"
-                                        render={({ field }) => (
-                                            <FormItem className="flex flex-col gap-2 grow">
-                                                <FormLabel>Hintergrundgeschichte</FormLabel>
-                                                <FormControl>
-                                                    <Textarea title="Hintergrundgeschichte" {...field} className="grow" />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
+                                    <FormElement className="flex flex-col gap-2 grow" title="Hintergrundgeschichte" infoText="Schreibe ein paar kurze Worte über deinen Charakter, seine Vegangenheit, was ihn geprägt hat und warum er in der aktuellen Situation ist">
+                                        <FormField
+                                            control={form.control}
+                                            name="story"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormControl>
+                                                        <Textarea title="Hintergrundgeschichte" {...field} className="min-h-[20rem] grow" />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </FormElement>
                                 </div>
                             </div>
 
@@ -249,7 +265,7 @@ export const Root: React.FunctionComponent = () => {
 
                         </div>
 
-                        <div className="flex flex-row gap-2 justify-center mt-5">
+                        <div className="sticky bottom-0 pb-4 lg:pb-0 flex flex-row gap-2 justify-center mt-5 bg-white lg:relative">
                             <AlertDialog>
                                 <AlertDialogTrigger asChild>
                                     <Button><ResetIcon /> Alles zurücksetzen</Button>
@@ -267,10 +283,11 @@ export const Root: React.FunctionComponent = () => {
                                     </AlertDialogFooter>
                                 </AlertDialogContent>
                             </AlertDialog>
-
-                            <Button type="submit" disabled={!form.formState.isValid || tokens !== 0}><DownloadIcon />Als PDF speichern</Button>
+                            <div className="relative">
+                                <Button type="submit" disabled={tokens !== 0}><DownloadIcon />Als PDF speichern</Button>
+                            </div>
                         </div>
-                    </Card>
+                    </div>
                 </form>
             </Form>
         </>
