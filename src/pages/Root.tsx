@@ -1,7 +1,7 @@
 import { StatusValue } from "@/components/feature/StatusValue"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { DownloadIcon, InfoCircledIcon, ResetIcon } from "@radix-ui/react-icons"
+import { DownloadIcon, ResetIcon } from "@radix-ui/react-icons"
 import { useMemo, useState } from "react"
 import { pdf } from '@react-pdf/renderer';
 import { Stats } from "@/lib/types/StatsType"
@@ -10,14 +10,13 @@ import { z } from 'zod'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { saveAs } from 'file-saver'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Card } from "@/components/ui/card"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { getFullCost } from "@/lib/cost"
 import { cn } from "@/lib/utils"
 import { Label } from "@/components/ui/label"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { motion, useAnimate } from 'framer-motion'
 import { FormElement } from "@/components/feature/FormElement"
 
 const defaultState: Stats = {
@@ -54,6 +53,7 @@ type CharacterForm = z.infer<typeof formSchema>
 
 export const Root: React.FunctionComponent = () => {
     const [stupidCounter, setStupidCounter] = useState(0)
+    const [scope, animate] = useAnimate()
 
     const form = useForm<CharacterForm>({
         resolver: zodResolver(formSchema),
@@ -72,6 +72,21 @@ export const Root: React.FunctionComponent = () => {
 
     const resetState = () => {
         form.reset()
+    }
+
+    const wiggleTokens = () => {
+        const animation = async () => {
+            await animate(
+                scope.current, 
+                { 
+                    x: [0, -5, 5, -5, 5, -5, 5, 0],
+                    color: ["#000", "#f00", "#f00", "#f00", "#f00", "#f00", "#f00", "#000"],
+                }, 
+                { duration: 0.4, ease: "linear" }
+            )
+        }
+
+        animation()
     }
 
     const tokens = useMemo(() => {
@@ -153,7 +168,12 @@ export const Root: React.FunctionComponent = () => {
                             </div>
                             <div className="flex flex-col lg:flex-row gap-4">
                                 <div className="flex flex-col gap-4 pt-4 border-b-[1px] lg:border-b-[0px] lg:border-r-[1px] border-grey pr-2">
-                                    <Label className={cn("sticky top-3 p-3 rounded-lg lg:relative lg:top-0 bg-white", tokens > 0 && "bg-red-50 font-bold")}>Zu verteilen: {tokens}</Label>
+                                    <motion.div
+                                        className={cn("sticky top-3 p-3 rounded-lg lg:relative lg:top-0 bg-white", tokens > 0 && "bg-red-50 font-bold")}
+                                        ref={scope}
+                                    >
+                                        <Label >Zu verteilen: {tokens}</Label>
+                                    </motion.div>
 
                                     <FormElement title="Stärke" infoText="Stärke bestimmt die körperliche Kraft deines Charakters. Sie ermöglicht es, schwere Gegenstände zu heben und in einer Kampfsituation ordentlich auszuteilen!">
                                         <FormField
@@ -162,7 +182,7 @@ export const Root: React.FunctionComponent = () => {
                                             render={({ field }) => (
                                                 <FormItem>
                                                     <FormControl>
-                                                        <StatusValue remainingTokens={tokens} value={field.value} onValueChanged={(val) => {
+                                                        <StatusValue remainingTokens={tokens} value={field.value} onNotEnoughTokens={wiggleTokens} onValueChanged={(val) => {
                                                             field.onChange(val)
                                                             setStupidCounter(stupidCounter + 1)
                                                         }
@@ -181,7 +201,7 @@ export const Root: React.FunctionComponent = () => {
                                             render={({ field }) => (
                                                 <FormItem>
                                                     <FormControl>
-                                                        <StatusValue remainingTokens={tokens} value={field.value} onValueChanged={(val) => {
+                                                        <StatusValue remainingTokens={tokens} value={field.value}  onNotEnoughTokens={wiggleTokens} onValueChanged={(val) => {
                                                             field.onChange(val)
                                                             setStupidCounter(stupidCounter + 1)
                                                         }} />
@@ -199,7 +219,7 @@ export const Root: React.FunctionComponent = () => {
                                             render={({ field }) => (
                                                 <FormItem>
                                                     <FormControl>
-                                                        <StatusValue remainingTokens={tokens} value={field.value} onValueChanged={(val) => {
+                                                        <StatusValue remainingTokens={tokens} value={field.value} onNotEnoughTokens={wiggleTokens}  onValueChanged={(val) => {
                                                             field.onChange(val)
                                                             setStupidCounter(stupidCounter + 1)
                                                         }} />
@@ -217,7 +237,7 @@ export const Root: React.FunctionComponent = () => {
                                             render={({ field }) => (
                                                 <FormItem>
                                                     <FormControl>
-                                                        <StatusValue remainingTokens={tokens} value={field.value} onValueChanged={(val) => {
+                                                        <StatusValue remainingTokens={tokens} value={field.value}  onNotEnoughTokens={wiggleTokens} onValueChanged={(val) => {
                                                             field.onChange(val)
                                                             setStupidCounter(stupidCounter + 1)
                                                         }} />

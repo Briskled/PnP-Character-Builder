@@ -11,15 +11,18 @@ export type StatusValueProps = {
     min?: number | undefined,
     max?: number | undefined,
     onValueChanged?: (number: number) => void,
+    onNotEnoughTokens?: () => void,
 }
 
-export const StatusValue: React.FunctionComponent<StatusValueProps & HTMLAttributes<HTMLDivElement>> = ({ className, remainingTokens, min = -2, max = 5, value, onValueChanged = () => { } }) => {
+export const StatusValue: React.FunctionComponent<StatusValueProps & HTMLAttributes<HTMLDivElement>> = ({ className, remainingTokens, min = -2, max = 5, value, onValueChanged = () => { }, onNotEnoughTokens = () => { }}) => {
     const changeValue = (nextValue: number) => {
-        if(nextValue > value) {
+        if (nextValue > value) {
             const cost = getCostStep(nextValue)
-            if(cost > remainingTokens)
+            if (cost > remainingTokens) {
+                onNotEnoughTokens()
                 return
-        }        
+            }
+        }
         const valueToSet = Math.min(max || Number.MAX_VALUE, Math.max(min || Number.MIN_VALUE, nextValue))
         onValueChanged(valueToSet)
     }
